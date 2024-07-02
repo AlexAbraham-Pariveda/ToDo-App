@@ -1,3 +1,6 @@
 .rightAlign {
     text-align: end;
   }
+  .leftAlign {
+    text-align: start;
+  }

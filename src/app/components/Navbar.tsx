@@ -23,28 +23,34 @@ export default function Navbar(props: { userEmail?: any; isBackButton?: boolean 
   };
 
   return (
-    <div className={styles.rightAlign}>
-      {!props.isBackButton ? (
-        <>
-          {props.userEmail}
-          <IconButton onClick={() => setOpenMenu(!openMenu)}>
-            <ExpandMoreIcon />
-            <Menu
-              style={{ marginTop: '2%' }}
-              open={openMenu}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              <MenuItem onClick={() => router.push('/profile')}>Profile</MenuItem>
-              <MenuItem onClick={() => handleSignOut()}>Sign Out</MenuItem>
-            </Menu>
-          </IconButton>
-        </>
-      ) : (
-        <Button onClick={() => router.back()}>Back</Button>
-      )}
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className={styles.leftAlign}>
+        <Button onClick={() => router.push('/projects')}>Projects</Button>
+        <Button onClick={() => router.push('/tasks')}>Tasks</Button>
+      </div>
+      <div className={styles.rightAlign}>
+        {!props.isBackButton ? (
+          <>
+            {props.userEmail}
+            <IconButton onClick={() => setOpenMenu(!openMenu)}>
+              <ExpandMoreIcon />
+              <Menu
+                style={{ marginTop: '2%' }}
+                open={openMenu}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem onClick={() => router.push('/profile')}>Profile</MenuItem>
+                <MenuItem onClick={() => handleSignOut()}>Sign Out</MenuItem>
+              </Menu>
+            </IconButton>
+          </>
+        ) : (
+          <Button onClick={() => router.back()}>Back</Button>
+        )}
+      </div>
     </div>
   );
 }
