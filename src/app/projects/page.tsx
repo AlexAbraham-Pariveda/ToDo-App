@@ -32,11 +32,15 @@ export default function Projects() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [isAddProject, setIsAddProject] = useState(false);
+  const [isEditProject, setIsEditProject] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const addProject = () => {
     setIsAddProject(!isAddProject);
+  };
+  const toggleEdit = (project: any) => {
+    setIsEditProject(true);
   };
 
   const createProject = () => {
@@ -45,8 +49,18 @@ export default function Projects() {
     fetchProjectsData(loggedUser);
   };
 
-  const deleteProject = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, project: any) => {
-    e.preventDefault();
+  const handleEditProject = async (project: any) => {
+    loggedUser?.editProjects(name || project.name, description || project.description, project.id);
+    setIsEditProject(false);
+    fetchProjectsData(loggedUser);
+  };
+
+  const deleteProject = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, project: any) => {
+    e.stopPropagation();
+    handleDeleteProject(project);
+  };
+
+  const handleDeleteProject = async (project: any) => {
     loggedUser?.deleteProjects(project.id);
     fetchProjectsData(loggedUser);
   };
@@ -127,18 +141,52 @@ export default function Projects() {
             <div key={project.name} className={styles.accordion}>
               <Accordion style={{ width: '80%' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} id={project.name}>
-                  <Typography>{project.name}</Typography>
+                  <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
+                    {!isEditProject ? (
+                      <Typography>{project.name}</Typography>
+                    ) : (
+                      <TextField
+                        label="name"
+                        defaultValue={project.name}
+                        onChange={(e) => setName(e.target.value)}
+                        variant="outlined"
+                        autoFocus
+                      />
+                    )}
+                    <Box>
+                      <Button size="small" onClick={() => toggleEdit(project)}>
+                        <EditIconButton />
+                      </Button>
 
-                  <Button size="small">
-                    <EditIconButton />
-                  </Button>
-
-                  <Button size="small" onClick={(e) => deleteProject(e, project)}>
-                    <DeleteIconButton />
-                  </Button>
+                      <Button size="small" onClick={(e) => deleteProject(e, project)}>
+                        <DeleteIconButton />
+                      </Button>
+                    </Box>
+                  </Box>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>{project.description}</Typography>
+                  {!isEditProject ? (
+                    <Typography>{project.description}</Typography>
+                  ) : (
+                    <>
+                      <TextField
+                        label="description"
+                        defaultValue={project.description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        variant="outlined"
+                        autoFocus
+                        fullWidth
+                      />
+                      <Button
+                        onClick={() => {
+                          setIsEditProject(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={() => handleEditProject(project)}>Save</Button>
+                    </>
+                  )}
                 </AccordionDetails>
               </Accordion>
               <br />
