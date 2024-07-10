@@ -4,18 +4,19 @@ import styles from '../styles/page.module.css';
 import { deleteUser, getAuth } from 'firebase/auth';
 import { firebaseService } from '../services/firebase-service';
 import { Button, Grid } from '@mui/material';
-import { getUser, getUserEmail } from '../services/utils';
+
 import Navbar from '../components/Navbar';
 import { useRouter } from 'next/navigation';
+import { getUser } from '../services/utils';
 
 export default function Profile() {
   const router = useRouter();
   const auth = getAuth(firebaseService);
-  const user = getUser();
+  const loggedUser = getUser();
 
   const handleDelete = () => {
-    if (getUser() !== null) {
-      deleteUser(user)
+    if (loggedUser?.currentUser !== null) {
+      deleteUser(loggedUser?.currentUser)
         .then(() => {
           router.back();
         })
@@ -34,7 +35,7 @@ export default function Profile() {
             <h1>Profile</h1>
           </Grid>
           <Grid item xs={12}>
-            <p>{getUserEmail()}</p>
+            <p>{loggedUser?.email}</p>
           </Grid>
           <Grid item xs={12}>
             <Button variant="contained" color="error" onClick={() => handleDelete()}>

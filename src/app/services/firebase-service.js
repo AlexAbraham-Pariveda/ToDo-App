@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = { //TODO: make these into env variables
   apiKey: "AIzaSyC8oSQ0mZBmBWwXa12w9YC9pImMIhvC7j8",
@@ -10,4 +11,4 @@ const firebaseConfig = { //TODO: make these into env variables
   };
 
 export const firebaseService = initializeApp(firebaseConfig)
-
+export const db = getFirestore(firebaseService)
