@@ -16,6 +16,7 @@ export class Tasks {
           id: doc.id,
           status: doc.data().status,
           date: doc.data().date,
+          project: doc.data().project,
           checklist: doc.data().checklist,
         });
       });
@@ -24,16 +25,39 @@ export class Tasks {
     }
     return tasks;
   }
-  async createTasks(name: string, description: string) {
-    await addDoc(collection(db, 'Users', this.uid, 'tasks'), { name: name, description: description });
+  async createTasks(
+    name: string,
+    description: string,
+    date: string,
+    status: string,
+    project: string,
+    checklist: object
+  ) {
+    await addDoc(collection(db, 'Users', this.uid, 'tasks'), {
+      name: name,
+      description: description,
+      date: date,
+      status: status,
+      project: project,
+      checklist: checklist,
+    });
   }
-  async editTasks(name: string, description: string, date: string, status: string, checklist: object, id: string) {
+  async editTasks(
+    name: string,
+    description: string,
+    date: string,
+    status: string,
+    project: string,
+    checklist: object,
+    id: string
+  ) {
     console.log(checklist);
     await updateDoc(doc(db, 'Users', this.uid, 'tasks', id), {
       name: name,
       description: description,
       date: date,
       status: status,
+      project: project,
       checklist: checklist,
     });
   }

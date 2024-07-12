@@ -48,7 +48,10 @@ export default function Navbar(props: { userEmail?: any; isBackButton?: boolean 
             </IconButton>
           </>
         ) : (
-          <Button onClick={() => router.back()}>Back</Button>
+          <>
+            <Button onClick={() => router.back()}>Back</Button>
+            <Button onClick={() => router.replace('/')}>Home</Button>
+          </>
         )}
       </div>
     </div>
