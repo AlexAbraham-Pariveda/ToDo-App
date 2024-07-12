@@ -24,20 +24,22 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import AddIconButton from '@mui/icons-material/add';
 
-const Task = ({ task, handleEditTask, deleteTask }: any) => {
+const Task = ({ task, projects, handleEditTask, deleteTask, viewOnly }: any) => {
   const [isEditTasks, setIsEditTasks] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(dayjs());
   const [status, setStatus] = useState('');
+  const [parentProject, setParentProject] = useState('');
   const [checklistData, setChecklistData] = useState(task.checklist || {});
   const [isAddChecklist, setIsAddChecklist] = useState(false);
   const [newChecklistName, setNewChecklistName] = useState('');
   const [newChecklistItemName, setNewChecklistItemName] = useState('');
   const [isTaskExpanded, setIsTaskExpanded] = useState(false);
+
   const statusItems = [
     { name: 'Not Started', color: 'red' },
-    { name: 'In Progress', color: 'yellow' },
+    { name: 'In Progress', color: 'orange' },
     { name: 'Completed', color: 'green' },
   ];
 
@@ -66,10 +68,9 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
 
   const handleAddChecklistItem = (checklistName: string) => {
     const checklistGroup: any = checklistData;
-    console.log(checklistName);
     checklistGroup[checklistName] = { ...checklistGroup[checklistName], [newChecklistItemName]: false };
-    console.log(checklistGroup);
     setChecklistData(checklistGroup);
+    setNewChecklistItemName('');
   };
 
   const handleDeleteCheck = (checklistName: string) => {
@@ -99,7 +100,6 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                 label="name"
                 defaultValue={task.name}
                 onChange={(e) => {
-                  e.stopPropagation();
                   setName(e.target.value);
                 }}
                 variant="outlined"
@@ -114,14 +114,14 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                 label="Due Date"
                 value={date || null}
                 onChange={(e: any) => {
-                  e.stopPropagation();
                   setDate(e);
                 }}
-                autoFocus
               />
             )}
             {!isEditTasks ? (
-              <Typography>{task.status}</Typography>
+              <Typography style={{ color: statusItems.filter((item) => item.name === task.status)[0].color }}>
+                {task.status}
+              </Typography>
             ) : (
               <Select
                 label="Status"
@@ -130,8 +130,6 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                   setStatus(e.target.value);
                 }}
                 variant="outlined"
-                autoFocus
-                required
               >
                 {statusItems.map((stat: any) => (
                   <MenuItem key={stat.name} value={stat.name}>
@@ -141,15 +139,17 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
               </Select>
             )}
 
-            <Box>
-              <Button size="small" onClick={() => openEdit()}>
-                <EditIconButton />
-              </Button>
+            {!viewOnly ? (
+              <Box>
+                <Button size="small" onClick={() => openEdit()}>
+                  <EditIconButton />
+                </Button>
 
-              <Button size="small" onClick={(e) => deleteTask(e, task)}>
-                <DeleteIconButton />
-              </Button>
-            </Box>
+                <Button size="small" onClick={(e) => deleteTask(e, task)}>
+                  <DeleteIconButton />
+                </Button>
+              </Box>
+            ) : null}
           </Box>
         </AccordionSummary>
         <AccordionDetails>
@@ -164,11 +164,37 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                 variant="outlined"
                 autoFocus
                 fullWidth
-                required
               />
             </>
           )}
           <br />
+          <br />
+          {!isEditTasks ? (
+            <>
+              <Typography>Project: {parentProject || task.project}</Typography>
+            </>
+          ) : (
+            <>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Typography>Parent Project: </Typography>
+                <Select
+                  style={{ minWidth: '40%' }}
+                  label="Project"
+                  value={parentProject}
+                  onChange={(e) => {
+                    setParentProject(e.target.value);
+                  }}
+                  variant="outlined"
+                >
+                  {projects?.map((item: any) => (
+                    <MenuItem key={item.name} value={item.name}>
+                      {item.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+            </>
+          )}
           <br />
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography>Checklists</Typography>
@@ -191,7 +217,6 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                       setNewChecklistName(e.target.value);
                     }}
                     variant="outlined"
-                    required
                   />
                 </AccordionSummary>
                 <AccordionDetails>
@@ -202,7 +227,7 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                       setIsAddChecklist(false);
                     }}
                   >
-                    Save
+                    Add
                   </Button>
                 </AccordionDetails>
               </Accordion>
@@ -218,14 +243,19 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                     <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
                       <Typography>{checklistName}</Typography>
                       <Box width="60%">
-                        <LinearProgress
-                          variant="determinate"
-                          value={
-                            (Object.values(checklistData[checklistName]).filter(Boolean).length /
-                              Object.values(checklistData[checklistName]).length) *
-                            100
-                          }
-                        />
+                        {Object.values(checklistData[checklistName]).length ? (
+                          <LinearProgress
+                            style={{ width: '80%', marginRight: '10px' }}
+                            variant="determinate"
+                            value={
+                              (Object.values(checklistData[checklistName]).filter(Boolean).length /
+                                Object.values(checklistData[checklistName]).length) *
+                              100
+                            }
+                          />
+                        ) : (
+                          <br />
+                        )}
                       </Box>
                     </Box>
                   </AccordionSummary>
@@ -247,15 +277,19 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                     <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
                       <Typography>{checklistName}</Typography>
                       <Box width="60%" display="flex" justifyContent="space-between" alignItems="center">
-                        <LinearProgress
-                          style={{ width: '80%', marginRight: '10px' }}
-                          variant="determinate"
-                          value={
-                            (Object.values(checklistData[checklistName]).filter(Boolean).length /
-                              Object.values(checklistData[checklistName]).length) *
-                            100
-                          }
-                        />
+                        {Object.values(checklistData[checklistName]).length ? (
+                          <LinearProgress
+                            style={{ width: '80%', marginRight: '10px' }}
+                            variant="determinate"
+                            value={
+                              (Object.values(checklistData[checklistName]).filter(Boolean).length /
+                                Object.values(checklistData[checklistName]).length) *
+                              100
+                            }
+                          />
+                        ) : (
+                          <br />
+                        )}
                         <Button size="small" onClick={() => handleDeleteCheck(checklistName)}>
                           <DeleteIconButton />
                         </Button>
@@ -278,49 +312,52 @@ const Task = ({ task, handleEditTask, deleteTask }: any) => {
                         <Button size="small" onClick={() => handleDeleteChecklistItem(checklistName, itemName)}>
                           <DeleteIconButton />
                         </Button>
-                        {idx === Object.keys(checklistData[checklistName]).length - 1 ? (
-                          <>
-                            <br />
-                            <TextField
-                              label="Add Item"
-                              value={newChecklistItemName}
-                              onChange={(e) => setNewChecklistItemName(e.target.value)}
-                              variant="outlined"
-                            />{' '}
-                            <br />
-                            <Button onClick={() => closeEdit()}>Cancel</Button>
-                            <Button
-                              onClick={() => {
-                                handleAddChecklistItem(checklistName);
-                              }}
-                            >
-                              Add
-                            </Button>
-                          </>
-                        ) : null}
+
                         <br />
                       </>
                     ))}
+                    <>
+                      <br />
+                      <TextField
+                        label="Add Item"
+                        value={newChecklistItemName}
+                        onChange={(e) => setNewChecklistItemName(e.target.value)}
+                        variant="outlined"
+                      />{' '}
+                      <br />
+                      <Button onClick={() => closeEdit()}>Cancel</Button>
+                      <Button
+                        onClick={() => {
+                          handleAddChecklistItem(checklistName);
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </>
                   </AccordionDetails>
                 </Accordion>
               ))}
           <br />
-          <Button
-            onClick={() => {
-              closeEdit(), setIsTaskExpanded(false);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              closeEdit();
-              setIsTaskExpanded(false);
-              handleEditTask(task, name, description, date, status, checklistData);
-            }}
-          >
-            Save
-          </Button>
+          {!viewOnly ? (
+            <>
+              <Button
+                onClick={() => {
+                  closeEdit(), setIsTaskExpanded(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  closeEdit();
+                  setIsTaskExpanded(false);
+                  handleEditTask(task, name, description, date, status, parentProject, checklistData);
+                }}
+              >
+                Save
+              </Button>
+            </>
+          ) : null}
         </AccordionDetails>
       </Accordion>
       <br />
